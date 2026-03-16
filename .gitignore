@@ -18,7 +18,6 @@ bin/
 build/
 
 # Конфигурационные файлы и секретные данные
-.env
 .env.local
 config.yaml
 config.json
