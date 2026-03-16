@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 # Copy the binary from the builder stage
 COPY --from=builder /app/club-service .
 
-# Copy .env file
-COPY .env .
+# Copy .env file if it exists
+COPY .env ./.env
 
 # Ensure the binary is executable
 RUN chmod +x club-service

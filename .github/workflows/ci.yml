@@ -60,19 +60,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
-
-  deploy:
-    name: Deploy to Staging
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to staging
-        run: |
-          echo "Deploying ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} to staging..."
-          # Add your deployment commands here, e.g., kubectl, docker-compose, etc.
-          # Example for Docker Compose:
-          # scp docker-compose.yml user@staging-server:/path/to/deploy/
-          # ssh user@staging-server "cd /path/to/deploy && docker-compose pull && docker-compose up -d"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
