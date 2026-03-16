@@ -32,7 +32,6 @@ config.toml
 
 # Модули Go
 vendor/
-go.sum
 go.mod~
 
 # IDE и редакторы
