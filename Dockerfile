@@ -1,25 +1,34 @@
-# Используем Go 1.23
+# Stage 1: Build the application
 FROM golang:1.23 AS builder
 
 WORKDIR /app
 
-# Копируем файлы
+# Copy go.mod and go.sum first to leverage Docker layer caching
 COPY go.mod go.sum ./
 RUN go mod download
+
+# Copy the rest of the source code
 COPY . .
 
-# Компилируем
-RUN go build -o club-service cmd/app/main.go
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o club-service cmd/app/main.go
 
-# Второй этап (минимальный контейнер)
-FROM debian:latest
+# Stage 2: Create a minimal image
+FROM debian:bullseye-slim
+
 WORKDIR /app
 
-# Копируем бинарник
+# Install CA certificates for HTTPS support
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Copy the binary from the builder stage
 COPY --from=builder /app/club-service .
 
-# Копируем .env в контейнер
-COPY .env .env
+# Copy .env file
+COPY .env .
 
-# Загружаем переменные окружения
-CMD ["./club-service"]
+# Ensure the binary is executable
+RUN chmod +x club-service
+
+# Run the application
+CMD ["/app/club-service"]
