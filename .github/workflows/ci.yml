@@ -1,0 +1,74 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE: ghcr.io/${{ github.repository }}/club-service
+  DOCKER_TAG: ${{ github.sha }}
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Run linting
+        run: make lint
+
+      - name: Run formatting check
+        run: make fmt
+
+      - name: Run tests
+        run: make test
+
+  build-and-push:
+    name: Build and Push Docker Image
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+
+  deploy:
+    name: Deploy to Staging
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} to staging..."
+          # Add your deployment commands here, e.g., kubectl, docker-compose, etc.
+          # Example for Docker Compose:
+          # scp docker-compose.yml user@staging-server:/path/to/deploy/
+          # ssh user@staging-server "cd /path/to/deploy && docker-compose pull && docker-compose up -d"

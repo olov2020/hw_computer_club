@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: club-service-config
+  namespace: computer-club
+data:
+  SERVER_PORT: "8080"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "club"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"

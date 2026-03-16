@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: club-service
+  namespace: computer-club
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: club-service
+  template:
+    metadata:
+      labels:
+        app: club-service
+    spec:
+      containers:
+      - name: club-service
+        image: ghcr.io/yourusername/club-service:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: club-service-config
+        - secretRef:
+            name: club-service-secret
