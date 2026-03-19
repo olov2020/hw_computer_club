@@ -4,7 +4,7 @@ FROM golang:1.23 AS builder
 WORKDIR /app
 
 # Copy go.mod and go.sum first to leverage Docker layer caching
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy the rest of the source code
@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 COPY --from=builder /app/club-service .
 
 # Copy .env file if it exists
-COPY .env ./.env
+COPY .env .env
 
 # Ensure the binary is executable
 RUN chmod +x club-service
