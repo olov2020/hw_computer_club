@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: club-service
-        image: ghcr.io/yourusername/club-service:latest
+        image: ghcr.io/olov2020/club-service:latest
         ports:
         - containerPort: 8080
         envFrom:
