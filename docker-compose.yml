@@ -1,41 +1,48 @@
-version: "3.9"
+version: '3.8'
 
 services:
   postgres:
-    image: postgres:latest
-    container_name: computer-club-db
-    restart: always
-    env_file:
-      - .env
+    image: postgres:18
+    container_name: postgres
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: club
+    volumes:
+      - postgres_data:/var/lib/postgresql
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d club"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:latest
-    container_name: club-redis
-    restart: always
-    env_file:
-      - .env
+    container_name: redis
     ports:
-      - "${REDIS_PORT}:${REDIS_PORT}"
+      - "6379:6379"
 
-  club-service:
+  app:
     build: .
     container_name: club-service
-    restart: always
-    depends_on:
-      - postgres
-      - redis
-    env_file:
-      - .env
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: secret
+      DB_NAME: club
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SERVER_PORT: 8080
 
 volumes:
   postgres_data:
